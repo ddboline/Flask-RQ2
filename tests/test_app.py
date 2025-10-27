@@ -139,5 +139,5 @@ def test_get_scheduler_importerror(rq):
     # in case scheduler can't be imported
     rq.scheduler_class = 'non.existing.Scheduler'
 
-    with pytest.raises(ImportError):
+    with pytest.raises(ValueError):
         rq.get_scheduler()
