@@ -18,6 +18,12 @@ inital ``MINOR`` releases such as ``18.0`` or ``19.2``.
 
 .. snip
 
+25.10.0 (2025-10-27)
+~~~~~~~~~~~~~~~~~~~~
+
+- Require rq >= 2.3.3 and rq-scheduler >= 0.14.0 , fix issue caused by change in rq cli module.
+
+
 18.3 (2018-12-20)
 ~~~~~~~~~~~~~~~~~
 
