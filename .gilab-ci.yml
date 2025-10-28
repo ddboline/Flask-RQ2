@@ -41,12 +41,6 @@ lint-python:
   artifacts:
     reports:
       codequality: $CI_PROJECT_DIR/code-quality-report.json
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-      when: always
-    - if: $CI_COMMIT_BRANCH == "master"
-      when: always
-    - when: never
 
 run-pytest:
   stage: post-build
