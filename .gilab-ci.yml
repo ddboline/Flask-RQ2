@@ -13,7 +13,6 @@ variables:
   DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   BACKEND_BASE_VERSION: 0.0.14
-  BASE_TAG: ${CI_REGISTRY_IMAGE}:backend-base-${BACKEND_BASE_VERSION}
 
 cache:
   paths:
