@@ -1,0 +1,71 @@
+# This is the GitLab CI build configuration for AgilisChemicals.com website frontend
+# See also https://gitlab.agilis.dev/help/ci/yaml/README.md
+# See also https://gitlab.agilis.dev/help/ci/examples/README.md
+# GCloud SDK https://cloud.google.com/sdk/docs/#linux
+
+image: docker:24.0.5-dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  BACKEND_BASE_VERSION: 0.0.14
+  BASE_TAG: ${CI_REGISTRY_IMAGE}:backend-base-${BACKEND_BASE_VERSION}
+
+cache:
+  paths:
+    - .cache/pip
+
+services:
+  - docker:24.0.5-dind
+
+stages:
+  - install-sdk
+  - pre-build
+  - docker-build
+  - post-build
+
+before_script:
+  - whoami
+  - echo ${CI_PROJECT_DIR}
+
+lint-python:
+  image: python:3.10-alpine
+  stage: pre-build
+  script:
+    - pip install --upgrade pip ruff
+    - ruff check || true
+    - ruff check --output-format=gitlab > code-quality-report.json
+  artifacts:
+    reports:
+      codequality: $CI_PROJECT_DIR/code-quality-report.json
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: always
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: always
+    - when: never
+
+run-pytest:
+  stage: post-build
+  image: python:3.10-slim-bullseye
+  services:
+    - postgres:16-alpine
+    - redis:7.0-alpine
+  coverage: '/(?i)total.*? (100(?:\.0+)?%|[1-9]?\d(?:\.\d+)?%)$/'
+  artifacts:
+    expire_in: 30 days
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov
+  script:
+    - pip install uv
+    - uv sync
+    - uv pip install .
+    - uv run pytest tests/
